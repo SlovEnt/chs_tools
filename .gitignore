@@ -7,6 +7,7 @@ resource/
 *.bak
 test_*.py
 log/
+*_log_*.png
 
 *.DS_Store
 
