@@ -106,7 +106,7 @@ def get_html_all_content(url, pageFlag, encode):
             time.sleep(5)
     return html
 
-def chrome_get_html_all_content(url, pageFlag):
+def chrome_get_html_all_content(url, pageFlag=""):
     driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=chromeOptions)
     browerLength = 1280
     browerWidth = 4096
@@ -114,7 +114,7 @@ def chrome_get_html_all_content(url, pageFlag):
 
     # time.sleep(2)
     getFlag = False
-    while getFlag == False:
+    while getFlag is False:
         try:
             driver.get(url)
             time.sleep(10)
@@ -122,7 +122,7 @@ def chrome_get_html_all_content(url, pageFlag):
             html = driver.page_source
             driver.save_screenshot(r"{0}\ok.png".format(SAVE_SCREE_FILE))
 
-            if pageFlag not in html:
+            if pageFlag not in html and pageFlag != "":
                   raise Exception("页面内容获取失败！！")
             else:
                 getFlag = True
