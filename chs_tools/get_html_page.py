@@ -107,14 +107,14 @@ def get_html_all_content(url, pageFlag, encode):
     return html
 
 def chrome_get_html_all_content(url, pageFlag=""):
-    driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=chromeOptions)
-    browerLength = 1280
-    browerWidth = 4096
-    driver.set_window_size(browerLength, browerWidth)
 
     # time.sleep(2)
     getFlag = False
     while getFlag is False:
+        driver = webdriver.Chrome(executable_path=chromeDriver, chrome_options=chromeOptions)
+        browerLength = 1280
+        browerWidth = 4096
+        driver.set_window_size(browerLength, browerWidth)
         try:
             driver.get(url)
             time.sleep(10)
@@ -133,6 +133,11 @@ def chrome_get_html_all_content(url, pageFlag=""):
             print(url, e)
             getFlag = False
             time.sleep(5)
+
+        finally:
+            driver.close()
+            driver.quit()
+
     return html
 
 def get_html_all_content_proxy(url, pageFlag, encode, proxyInfoDict):

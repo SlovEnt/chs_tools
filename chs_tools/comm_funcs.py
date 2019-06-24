@@ -11,6 +11,7 @@ import time
 import paramiko
 from openpyxl import load_workbook
 from random import Random
+from collections import OrderedDict
 
 def get_now_date(dateFormat):
 
@@ -202,3 +203,96 @@ def Get_Random_Str(randomlength=8):
     for i in range(randomlength):
         str += chars[random.randint(0, length)]
     return str
+
+# /*  以下函数为暂存，无法直接使用。
+def Table_Row_Is_Exist(self, tableName, whereDict):
+    ''' 返回指定条件下返回的ROW数据总数 '''
+    strSql = "SELECT * FROM {0} WHERE 0=0".format(tableName)
+    strWhere = ""
+    for key, value in whereDict.items():
+        strWhere = strWhere + " " + "AND {0}='{1}'".format(key, value)
+
+    strSql = strSql + strWhere
+
+    rtnDatas = OrderedDict()
+
+    # print(strSql)
+    rtnDBDatas = self.mysqlConn.query(strSql)
+
+    rtnDatas["CNT"] = len(rtnDBDatas)
+    rtnDatas["CONTENT"] = rtnDBDatas
+    # rtnDatas["STRWHERE"] = strWhere.replace(strWhere[0:4], "")
+    rtnDatas["STRSQL"] = strSql
+
+    return rtnDatas
+
+def Update_Init_TaskLog(self,tableName, whereDict, newSetData):
+    ''' 入参格式 第一个字典为条件字典 第二个是SET字段（字典格式） '''
+
+    # 分拆字典 把原始字典分拆为两个SQL语句段 条件 SET
+    strWhereSql = ""
+    strSetSql = ""
+    strQuerySql = ""
+
+    for setField in newSetData:
+
+        # 删除folder_name字典项 数据库中无此列表
+        if setField == "folder_name":
+            continue
+
+        ''' 组装SET语句 '''
+        for key, value in newSetData.items():
+            if isinstance(value,str) == True :
+                value = value.replace("'", "''")
+            if key == setField:
+                # SET 语句
+                if strSetSql == "":
+                    strSetSql = "%s='%s'" % (key, value)
+                    strQuerySql = "%s" % (key)
+                else:
+                    strSetSql = strSetSql + ", %s='%s'" % (key, value)
+                    strQuerySql = strQuerySql + ", %s" % (key)
+
+    for setField in whereDict:
+        ''' 组装WHERE语句 '''
+        for key, value in whereDict.items():
+            if isinstance(value,str) == True :
+                value = value.replace("'", "''")
+            if key == setField:
+                # SET 语句
+                if strWhereSql == "":
+                    strWhereSql = " AND %s='%s'" % (key, value)
+                else:
+                    strWhereSql = strWhereSql + "AND %s='%s'" % (key, value)
+
+    ''' 最终组装UPDATE全语句 '''
+    strSql = "UPDATE {0} SET {1} WHERE 0=0{2}".format(tableName, strSetSql, strWhereSql)
+    # print(strSql)
+
+    try:
+        self.mysqlConn.execute(strSql)
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+def Inser_Init_TaskLog(self, tableName, postNode):
+    fieldList = ""
+    valueList = ""
+    for key, value in postNode.items():
+        if key == "folder_name":
+            continue
+        if fieldList == "":
+            fieldList = "{0}".format(key)
+            valueList = "'{0}'".format(value)
+        else:
+            fieldList = "{0}, {1}".format(fieldList, key)
+            valueList = "{0}, '{1}'".format(valueList, value)
+    strSql = "INSERT INTO {0} ({1}) VALUES ({2})".format(tableName, fieldList, valueList)
+    # print(strSql)
+    try:
+        self.mysqlConn.execute(strSql)
+        return True
+    except Exception as e:
+        return e
+# ------------------------------------------------------------------*/
