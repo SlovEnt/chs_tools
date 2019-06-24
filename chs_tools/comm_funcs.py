@@ -10,6 +10,7 @@ import os
 import time
 import paramiko
 from openpyxl import load_workbook
+from random import Random
 
 def get_now_date(dateFormat):
 
@@ -193,3 +194,11 @@ def Net_RemtePath_IsAccess(remoteNetPath, remoteHostUser, remoteHostUserPasswd):
     except Exception as e:
         return e
 
+def Get_Random_Str(randomlength=8):
+    str = ''
+    chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz013456789'
+    length = len(chars) - 1
+    random = Random()
+    for i in range(randomlength):
+        str += chars[random.randint(0, length)]
+    return str
