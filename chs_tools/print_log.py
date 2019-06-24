@@ -33,13 +33,13 @@ class C_PrintLog(object):
         if self.logFile != "":
             self.logFile.write(now.strftime("%Y-%m-%d %H:%M:%S") + ": " + msg + "\n")
 
-    def tmpinfo(msg=""):
+    def tmpinfo(self, msg=""):
         now = datetime.datetime.now()
         # if msg != "":
         #     msg = " " + msg
         print("\033[1;32mTEMP INFO: " + now.strftime("%Y-%m-%d %H:%M:%S") + ":\033[0m", msg)
 
-    def time_remain(msg, showMins):
+    def time_remain(self, msg, showMins):
         now = datetime.datetime.now()
         cnt = 0
         while (cnt < showMins):
