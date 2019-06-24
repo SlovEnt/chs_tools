@@ -6,7 +6,10 @@ __version__ = '1.1'
 
 import datetime
 import re
+import os
 import time
+import paramiko
+from openpyxl import load_workbook
 
 def get_now_date(dateFormat):
 
@@ -105,4 +108,88 @@ def print_dict_item(dict,dictName="x"):
         print ("""{2}["{0}"] = {1}""".format(key, value, dictName))
     print()
     time.sleep(0.5)
+
+def get_linux_env_nls_lang(sshCmd):
+    '''取Oracle用户下的字符集编码'''
+    '''需要实例化sshCmd'''
+    strCMD = "cat ~/.bash_profile |grep NLS_LANG"
+    stdin, stdout, stderr = sshCmd.exec_command(strCMD)
+    for std in stdout.readlines():
+        if "#" not in std.strip("\n"):
+            dataReg = re.compile(r"""export NLS_LANG=["|'](.+?)['|"]""")
+            rawDatas = dataReg.findall(std.strip("\n"))
+            if len(rawDatas) == 1:
+                return rawDatas[0]
+    return False
+
+def get_exclude_list(xlsFile,xlsSheetName):
+    # 读取Excek文件
+    xlsWBook = load_workbook(xlsFile)
+    xlsWSheet = xlsWBook.get_sheet_by_name(xlsSheetName)
+    startRow = 2  # 起始行号
+    xlsRowList = []
+
+    colCnt = len(list(xlsWSheet.columns))
+    rowCnt = len(list(xlsWSheet.rows))
+    xlsWSheet = list(xlsWSheet.rows)
+
+    xSn = 0
+    for rowv in range(1, rowCnt):
+        xSn = xSn + 1
+        colDict={}
+        for colv in range(0, colCnt):
+            if xlsWSheet[rowv][colv].value == None:
+                valueX = ""
+            else:
+                valueX = xlsWSheet[rowv][colv].value
+
+                # 如果Excel里的变量为字符型，则去前后空格，减免出错几率
+                if isinstance(valueX,str) == True:
+                    valueX = valueX.strip()
+
+            colDict[xlsWSheet[0][colv].value] = valueX
+            colDict["xSn"] = xSn
+        if int(colDict["处理标志"][0]) == 0:
+            xlsRowList.append(colDict)
+
+    return xlsRowList
+
+def get_ssh_hander(hostIP, userName, userPasswd):
+    sshCmd = paramiko.SSHClient()
+    sshCmd.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    sshCmd.connect(hostIP, 22, userName, userPasswd)
+    return sshCmd
+
+def Net_RemtePath_IsAccess(remoteNetPath, remoteHostUser, remoteHostUserPasswd):
+
+    strCmd = r"net use %s %s /user:%s" % (remoteNetPath, remoteHostUserPasswd, remoteHostUser)
+
+    try:
+        from subprocess import PIPE, Popen
+        cmdHandle = Popen(strCmd, shell=True, stdout=PIPE, stderr=PIPE)
+        out, err = cmdHandle.communicate()
+        strOutMsg = out.decode("gb2312")
+        strErrMsg = err.decode("gb2312")
+        if strOutMsg:
+            rtnCmdMsg = strOutMsg
+        else:
+            rtnCmdMsg = strErrMsg
+
+        rtnCmdMsgLine = ""
+        for line in rtnCmdMsg:
+            rtnCmdMsgLine += line.strip()
+
+        if "1219" in rtnCmdMsgLine or strOutMsg:
+            # 尝试文件是否可以进行读写操作
+            import uuid
+            wirteFlagFile = "%s\%s" % (remoteNetPath,str(uuid.uuid4()))
+            with open(wirteFlagFile, "w") as testFile:
+                pass
+            os.remove(wirteFlagFile)
+            return True
+        else:
+            return rtnCmdMsgLine
+
+    except Exception as e:
+        return e
 
