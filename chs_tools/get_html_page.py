@@ -85,6 +85,7 @@ def get_html_all_content(url, pageFlag, encode):
     :return:
     '''
     # time.sleep(2)
+    html = ""
     getFlag = False
     while getFlag == False:
         try:
@@ -147,6 +148,7 @@ def get_html_all_content_proxy(url, pageFlag, encode, proxyInfoDict):
     :return:
     '''
     # time.sleep(2)
+    html = ""
     getFlag = False
     n = 0
     html = "-----------------"
