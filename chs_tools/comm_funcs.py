@@ -296,3 +296,37 @@ def Inser_Init_TaskLog(self, tableName, postNode):
     except Exception as e:
         return e
 # ------------------------------------------------------------------*/
+
+def id_15to18(idCode):
+    try:
+        if len(idCode)!= 15:
+            raise Exception("输入证件号码不是15位号码")
+
+        year =int(idCode[6:8])
+        year_now = int(datetime.datetime.now().strftime('%Y'))-2000
+        if year > year_now:
+            id_card_temp = idCode[0:6]+'19'+idCode[6:]   #补齐日期码
+        else:
+            id_card_temp = idCode[0:6]+'20'+idCode[6:]   #补齐日期码
+
+        s = map(int, id_card_temp)
+        a = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+        b = sum(map(lambda x: x[0] * x[1], zip(a, s)))
+        c = b % 11
+        d = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
+        idCode18 = "{0}{1}".format(id_card_temp, d[c])
+        return idCode18
+
+    except Exception as e:
+        print(idCode, str(e))
+        return False
+
+def id_18to15(idCode):
+    try:
+        if len(idCode)!= 15:
+            raise Exception("输入证件号码不是15位号码")
+        rtnIdCode = "{0}{1}".format(idCode[0:6], idCode[8:17])
+        return rtnIdCode
+    except Exception as e:
+        print(idCode, str(e))
+        return False
