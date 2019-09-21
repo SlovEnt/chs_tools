@@ -115,6 +115,7 @@ class Connection(object):
         """Closes the existing database connection and re-opens it."""
         self.close()
         self._db = MySQLdb.connect(**self._db_args)
+        self._db.ping(True)
         self._db.autocommit(True)
 
     def iter(self, query, *parameters, **kwparameters):
@@ -270,3 +271,60 @@ if MySQLdb is not None:
     # Alias some common MySQL exceptions
     IntegrityError = MySQLdb.IntegrityError
     OperationalError = MySQLdb.OperationalError
+
+
+''' 
+torcon = Connection(settings.db_host, settings.db_name, user=settings.db_user, password=settings.db_password)
+
+def transactional(method):
+    def wrapper(*args, **kwds):
+        try:
+            _result = method(*args, **kwds)
+            torcon._db.commit()
+        except Exception as e:
+            torcon._db.rollback()
+            raise e
+        return _result
+
+    return wrapper
+
+
+def get(method):
+    def wrapper(dao, *args, **kwds):
+        sql = method(dao, *args, **kwds)
+        return torcon.get(sql, *args, **kwds)
+
+    return wrapper
+
+
+def select(method):
+    def wrapper(dao, *args, **kwds):
+        sql = method(dao, *args, **kwds)
+        return torcon.query(sql, *args, **kwds)
+
+    return wrapper
+
+
+def insert(method):
+    def wrapper(dao, *args, **kwds):
+        sql = method(dao, *args, **kwds)
+        return torcon.insert(sql, *args, **kwds)
+
+    return wrapper
+
+
+def update(method):
+    def wrapper(dao, *args, **kwds):
+        sql = method(dao, *args, **kwds)
+        return torcon.update(sql, *args, **kwds)
+
+    return wrapper
+
+
+def delete(method):
+    def wrapper(dao, *args, **kwds):
+        sql = method(dao, *args, **kwds)
+        return torcon.execute(sql, *args, **kwds)
+
+    return wrapper
+'''
